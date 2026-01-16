@@ -29,6 +29,15 @@ async function bootstrap() {
     .setTitle('App API')
     .setDescription('The app API description')
     .setVersion('1.0')
+    .addCookieAuth('access_token')
+    .addGlobalParameters({
+      name: 'x-tenant-id',
+      in: 'header',
+    })
+    .addGlobalResponse({
+      status: 500,
+      description: 'Internal Server Error',
+    })
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

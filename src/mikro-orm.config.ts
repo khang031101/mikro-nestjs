@@ -4,8 +4,10 @@ import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { Migrator } from '@mikro-orm/migrations';
 import { SeedManager } from '@mikro-orm/seeder';
 
+const env = process.env.NODE_ENV || 'development';
+
 config({
-  path: process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env',
+  path: env !== 'development' ? `.env.${env}` : '.env',
 });
 
 export default defineConfig({
@@ -16,8 +18,12 @@ export default defineConfig({
   dbName: process.env.DB_NAME || 'auth_db',
   entities: ['dist/**/*.entity.js'],
   entitiesTs: ['src/**/*.entity.ts'],
-  debug: process.env.NODE_ENV === 'development',
+  debug: env === 'development',
   highlighter: new SqlHighlighter(),
   namingStrategy: UnderscoreNamingStrategy,
   extensions: [Migrator, SeedManager],
+  migrations: {
+    path: 'dist/src/migrations',
+    pathTs: 'src/migrations',
+  },
 });

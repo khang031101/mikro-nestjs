@@ -2,12 +2,15 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import type { FastifyRequest } from 'fastify';
+import { ClsModule } from 'nestjs-cls';
 import mikroOrmConfig from './mikro-orm.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { DocumentModule } from './modules/documents/document.module';
 import { UserModule } from './modules/users/user.module';
-import { APP_GUARD } from '@nestjs/core';
-
+import { WorkspaceModule } from './modules/workspaces/workspace.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -23,10 +26,31 @@ import { APP_GUARD } from '@nestjs/core';
       ],
     }),
     MikroOrmModule.forRoot(mikroOrmConfig),
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+      },
+      interceptor: {
+        mount: true,
+        setup: (cls, context) => {
+          const request = context.switchToHttp().getRequest<FastifyRequest>();
+
+          const tenantId = request.headers?.['x-tenant-id'];
+          if (tenantId) {
+            cls.set(
+              'tenantId',
+              Array.isArray(tenantId) ? tenantId[0] : tenantId,
+            );
+          }
+        },
+      },
+    }),
     AuthModule,
     UserModule,
+    WorkspaceModule,
+    DocumentModule,
   ],
-  controllers: [],
   providers: [
     {
       provide: APP_GUARD,
