@@ -6,8 +6,8 @@ import { CoreEntity } from './core.entity';
   name: 'tenant',
   cond: () => {
     const cls = ClsServiceManager.getClsService();
-    const tenantId = cls?.get<string>('tenantId');
-    return tenantId ? { tenantId } : {};
+    const tenantId = cls.get<string>('tenantId') ?? '';
+    return { tenantId };
   },
   default: true,
 })

@@ -16,6 +16,9 @@ export class User extends CoreEntity {
   @Property({ default: true })
   isActive: boolean = true;
 
+  @Property({ default: false, hidden: true })
+  isAdmin: boolean = false;
+
   @BeforeCreate()
   async hashPassword() {
     if (this.password) {
