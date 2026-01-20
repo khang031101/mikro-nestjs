@@ -30,6 +30,11 @@ export class WorkspaceController {
     return this.workspaceService.createWorkspace(userId, body);
   }
 
+  @Get()
+  getWorkspaces(@CurrentUserId() userId: string) {
+    return this.workspaceService.getWorkspaces(userId);
+  }
+
   // Members
   @Post(':id/invite')
   inviteMember(

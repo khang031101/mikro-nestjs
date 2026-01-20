@@ -11,7 +11,11 @@ export class UserHelper {
   }
 
   async clearUsers() {
-    await this.em.nativeDelete(User, {});
+    await this.em
+      .getConnection()
+      .execute(
+        'TRUNCATE TABLE "document_version", "document", "workspace_member", "workspace", "user" RESTART IDENTITY CASCADE',
+      );
   }
 
   async createUser(email: string, password: string): Promise<User> {

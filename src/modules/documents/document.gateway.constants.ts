@@ -1,4 +1,5 @@
 export const DOCUMENTS_NAMESPACE = 'documents';
+export const DOCUMENT_ROOM_PREFIX = 'doc:';
 
 export const DOCUMENT_EVENTS = {
   CONNECT: 'connect',

@@ -88,6 +88,24 @@ export class DocumentService {
     return { snapshot: document.snapshot };
   }
 
+  async getMarkdown(documentId: string) {
+    const document = await this.requireDocument(documentId);
+    const snapshot = this.ensureSnapshotObject(document.snapshot);
+    return { markdown: snapshot.markdown ?? '' };
+  }
+
+  async setMarkdown(documentId: string, markdown: string) {
+    const document = await this.requireDocument(documentId);
+    const snapshot = this.ensureSnapshotObject(document.snapshot);
+    snapshot.markdown = markdown;
+
+    document.snapshot = snapshot;
+    this.em.persist(document);
+    await this.em.flush();
+
+    return { markdown };
+  }
+
   async createSnapshot(documentId: string, snapshot: unknown) {
     if (snapshot === undefined) {
       throw new BadRequestException('Snapshot is required');
@@ -143,5 +161,15 @@ export class DocumentService {
     await this.em.flush();
 
     return document;
+  }
+
+  private ensureSnapshotObject(snapshot: unknown): Record<string, unknown> & {
+    markdown?: string;
+  } {
+    if (!snapshot || typeof snapshot !== 'object') {
+      return {};
+    }
+
+    return snapshot as Record<string, unknown> & { markdown?: string };
   }
 }

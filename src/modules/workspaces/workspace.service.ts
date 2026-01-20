@@ -87,6 +87,24 @@ export class WorkspaceService {
     return member;
   }
 
+  async getWorkspaces(userId: string) {
+    const memberships = await this.workspaceMemberRepository.find(
+      {
+        user: userId,
+        isActive: true,
+      },
+      { filters: false },
+    );
+
+    const workspaceIds = memberships.map((m) => m.workspace.id);
+
+    const workspaces = await this.workspaceRepository.find({
+      id: { $in: workspaceIds },
+    });
+
+    return workspaces;
+  }
+
   async getMembers(workspaceId: string, query: QueryMemberDto) {
     const workspace = await this.workspaceRepository.findOne(workspaceId);
 

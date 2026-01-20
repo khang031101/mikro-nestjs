@@ -9,7 +9,11 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards';
 import { DocumentService } from './document.service';
-import { CreateDocumentSnapshotDto, RestoreDocumentVersionDto } from './dtos';
+import {
+  CreateDocumentSnapshotDto,
+  RestoreDocumentVersionDto,
+  SetDocumentMarkdownDto,
+} from './dtos';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
@@ -45,5 +49,18 @@ export class DocumentController {
     @Body() body: RestoreDocumentVersionDto,
   ) {
     return this.documentService.restoreVersion(id, body.version);
+  }
+
+  @Get(':id/markdown')
+  getDocumentMarkdown(@Param('id', ParseUUIDPipe) id: string) {
+    return this.documentService.getMarkdown(id);
+  }
+
+  @Post(':id/markdown')
+  setDocumentMarkdown(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: SetDocumentMarkdownDto,
+  ) {
+    return this.documentService.setMarkdown(id, body.markdown);
   }
 }
