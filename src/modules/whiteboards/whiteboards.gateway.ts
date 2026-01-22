@@ -17,6 +17,7 @@ import { WhiteboardsService } from './whiteboards.service';
   cors: {
     origin: '*',
   },
+  maxHttpBufferSize: 50 * 1024 * 1024, // 50MB
 })
 export class WhiteboardsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -27,6 +28,7 @@ export class WhiteboardsGateway
   private readonly logger = new Logger(WhiteboardsGateway.name);
   private readonly docs = new Map<string, Y.Doc>();
   private readonly saveTimers = new Map<string, NodeJS.Timeout>();
+  private readonly socketParams = new Map<string, string>(); // socketId -> whiteboardId
 
   // Configurable debounce time in ms
   private readonly DEBOUNCE_MS = 2000;
@@ -40,6 +42,27 @@ export class WhiteboardsGateway
 
   handleDisconnect(client: Socket) {
     this.logger.debug(`Client disconnected: ${client.id}`);
+    const whiteboardId = this.socketParams.get(client.id);
+    if (whiteboardId) {
+      this.server
+        .to(whiteboardId)
+        .emit('user-disconnected', { userId: client.id });
+      this.socketParams.delete(client.id);
+    }
+  }
+
+  @SubscribeMessage('cursor-update')
+  handleCursorUpdate(
+    @MessageBody()
+    data: { whiteboardId: string; data: Record<string, unknown> },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { whiteboardId, data: payload } = data;
+    // Broadcast cursor to other clients in the room
+    client.to(whiteboardId).emit('cursor-update', {
+      userId: client.id,
+      data: payload,
+    });
   }
 
   @SubscribeMessage('join')
@@ -51,6 +74,7 @@ export class WhiteboardsGateway
     this.logger.debug(`Client ${client.id} joining whiteboard ${whiteboardId}`);
 
     await client.join(whiteboardId);
+    this.socketParams.set(client.id, whiteboardId);
 
     // Load or create Y.Doc for this whiteboard
     let doc = this.docs.get(whiteboardId);
