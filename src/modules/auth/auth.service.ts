@@ -16,6 +16,7 @@ import { UserService } from '../users/user.service';
 import { ITokenPayload } from './auth.interface';
 import { SignInDto } from './dtos/sign-in.dto';
 import { SignUpDto } from './dtos/sign-up.dto';
+import { ClsService } from 'nestjs-cls';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly em: EntityManager,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly cls: ClsService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<User | null> {
@@ -38,7 +40,14 @@ export class AuthService {
   }
 
   generateAccessToken(user: User) {
-    const payload: ITokenPayload = { sub: user.id, email: user.email };
+    const payload: ITokenPayload = {
+      sub: user.id,
+      name: user.name,
+      email: user.email,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
     return this.jwtService.sign(payload);
   }
 
@@ -55,7 +64,11 @@ export class AuthService {
   }
 
   async signUp(dto: SignUpDto) {
-    const user = new User({ email: dto.email, password: dto.password });
+    const user = new User({
+      name: dto.name,
+      email: dto.email,
+      password: dto.password,
+    });
 
     this.em.persist(user);
 
@@ -69,5 +82,15 @@ export class AuthService {
     }
 
     return { user, token: this.generateAccessToken(user) };
+  }
+
+  async getMe() {
+    const userId = this.cls.get('userId');
+
+    if (!userId) {
+      return null;
+    }
+
+    return this.userService.findOneById(userId);
   }
 }

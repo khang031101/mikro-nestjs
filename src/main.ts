@@ -11,6 +11,14 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
+declare module 'nestjs-cls' {
+  interface ClsStore {
+    userId?: string;
+    userEmail?: string;
+    tenantId?: string;
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,

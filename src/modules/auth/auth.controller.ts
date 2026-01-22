@@ -1,15 +1,6 @@
-import { User } from '@/entities/user.entity';
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import type { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply } from 'fastify';
 import { cookieOptions } from './auth.const';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dtos/sign-in.dto';
@@ -52,7 +43,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getProfile(@Req() req: FastifyRequest & { user: User }) {
-    return req.user;
+  getProfile() {
+    return this.authService.getMe();
   }
 }

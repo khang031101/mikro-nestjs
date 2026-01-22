@@ -31,6 +31,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   validate(payload: ITokenPayload) {
     this.cls.set('userId', payload.sub);
     this.cls.set('userEmail', payload.email);
-    return { userId: payload.sub, email: payload.email };
+    return { id: payload.sub, name: payload.name, email: payload.email };
   }
 }
