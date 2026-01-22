@@ -2,13 +2,15 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import type { FastifyRequest } from 'fastify';
 import { ClsModule } from 'nestjs-cls';
+import { GlobalFilter } from './common/filters/global.filter';
 import mikroOrmConfig from './mikro-orm.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/users/user.module';
+import { WhiteboardsModule } from './modules/whiteboards/whiteboards.module';
 
 @Module({
   imports: [
@@ -47,11 +49,16 @@ import { UserModule } from './modules/users/user.module';
     }),
     AuthModule,
     UserModule,
+    WhiteboardsModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: GlobalFilter,
     },
   ],
 })
