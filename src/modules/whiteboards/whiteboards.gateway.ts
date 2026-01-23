@@ -10,6 +10,12 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import * as Y from 'yjs';
+import {
+  Awareness,
+  encodeAwarenessUpdate,
+  applyAwarenessUpdate,
+  removeAwarenessStates,
+} from 'y-protocols/awareness';
 import { WhiteboardsService } from './whiteboards.service';
 
 @WebSocketGateway({
@@ -27,8 +33,12 @@ export class WhiteboardsGateway
 
   private readonly logger = new Logger(WhiteboardsGateway.name);
   private readonly docs = new Map<string, Y.Doc>();
+  private readonly awareness = new Map<string, Awareness>();
   private readonly saveTimers = new Map<string, NodeJS.Timeout>();
-  private readonly socketParams = new Map<string, string>(); // socketId -> whiteboardId
+  // socketId -> whiteboardId
+  private readonly socketParams = new Map<string, string>();
+  // socketId -> clientID (number)
+  private readonly socketClientIds = new Map<string, number>();
 
   // Configurable debounce time in ms
   private readonly DEBOUNCE_MS = 2000;
@@ -43,38 +53,55 @@ export class WhiteboardsGateway
   handleDisconnect(client: Socket) {
     this.logger.debug(`Client disconnected: ${client.id}`);
     const whiteboardId = this.socketParams.get(client.id);
+    const clientID = this.socketClientIds.get(client.id);
+
     if (whiteboardId) {
+      if (clientID !== undefined) {
+        const awareness = this.awareness.get(whiteboardId);
+        if (awareness) {
+          removeAwarenessStates(awareness, [clientID], 'server');
+        }
+      }
+
       this.server
         .to(whiteboardId)
         .emit('user-disconnected', { userId: client.id });
       this.socketParams.delete(client.id);
+      this.socketClientIds.delete(client.id);
     }
   }
-
-  @SubscribeMessage('cursor-update')
-  handleCursorUpdate(
-    @MessageBody()
-    data: { whiteboardId: string; data: Record<string, unknown> },
+  @SubscribeMessage('awareness-update')
+  handleAwarenessUpdate(
+    @MessageBody() data: { whiteboardId: string; update: Uint8Array },
     @ConnectedSocket() client: Socket,
   ) {
-    const { whiteboardId, data: payload } = data;
-    // Broadcast cursor to other clients in the room
-    client.to(whiteboardId).emit('cursor-update', {
-      userId: client.id,
-      data: payload,
-    });
+    const { whiteboardId, update } = data;
+
+    const awareness = this.awareness.get(whiteboardId);
+    if (awareness) {
+      try {
+        applyAwarenessUpdate(awareness, new Uint8Array(update), client);
+      } catch (err) {
+        this.logger.error(`Error applying awareness update: ${err}`);
+      }
+    }
+
+    client.to(whiteboardId).emit('awareness-update', update);
   }
 
   @SubscribeMessage('join')
   async handleJoin(
-    @MessageBody() data: { whiteboardId: string },
+    @MessageBody() data: { whiteboardId: string; clientID?: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const { whiteboardId } = data;
+    const { whiteboardId, clientID } = data;
     this.logger.debug(`Client ${client.id} joining whiteboard ${whiteboardId}`);
 
     await client.join(whiteboardId);
     this.socketParams.set(client.id, whiteboardId);
+    if (clientID) {
+      this.socketClientIds.set(client.id, clientID);
+    }
 
     // Load or create Y.Doc for this whiteboard
     let doc = this.docs.get(whiteboardId);
@@ -97,11 +124,42 @@ export class WhiteboardsGateway
       }
     }
 
+    // Ensure Awareness exists
+    let awareness = this.awareness.get(whiteboardId);
+    if (!awareness) {
+      awareness = new Awareness(doc);
+      // Hook to broadcast server-side awareness changes (like disconnects)
+      awareness.on(
+        'update',
+        ({
+          added,
+          updated,
+          removed,
+        }: {
+          added: number[];
+          updated: number[];
+          removed: number[];
+        }) => {
+          const changedClients = added.concat(updated).concat(removed);
+          const update = encodeAwarenessUpdate(awareness!, changedClients);
+          this.server.to(whiteboardId).emit('awareness-update', update);
+        },
+      );
+      this.awareness.set(whiteboardId, awareness);
+    }
+
     // Send current state to the joining client
     const state = Y.encodeStateAsUpdate(doc);
     // Convert Uint8Array to regular array or Buffer-like object for transport if necessary,
     // but Socket.IO handles binary well.
     client.emit('sync', state);
+
+    // Send current awareness state to the joining client
+    const awarenessState = encodeAwarenessUpdate(
+      awareness,
+      Array.from(awareness.getStates().keys()),
+    );
+    client.emit('awareness-update', awarenessState);
   }
 
   @SubscribeMessage('update')

@@ -29,4 +29,28 @@ export class WhiteboardsController {
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.whiteboardsService.findOne(id);
   }
+
+  @Post(':id/versions')
+  createVersion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('name') name?: string,
+  ) {
+    return this.whiteboardsService.createVersion(id, name);
+  }
+
+  @Get(':id/versions')
+  getVersions(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: QueryWhiteboardDto,
+  ) {
+    return this.whiteboardsService.getVersions(id, query);
+  }
+
+  @Post(':id/versions/:versionId/restore')
+  restoreVersion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('versionId', ParseUUIDPipe) versionId: string,
+  ) {
+    return this.whiteboardsService.restoreVersion(id, versionId);
+  }
 }
