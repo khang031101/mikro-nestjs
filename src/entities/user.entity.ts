@@ -13,6 +13,12 @@ export class User extends CoreEntity {
   @Property({ nullable: true, hidden: true })
   password?: string;
 
+  @Property({ nullable: true })
+  googleId?: string;
+
+  @Property({ nullable: true })
+  avatarUrl?: string;
+
   @Property({ default: true })
   isActive: boolean = true;
 

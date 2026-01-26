@@ -7,3 +7,5 @@ export const cookieOptions: CookieSerializeOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   path: '/',
 };
+
+export const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60; // 7 days in seconds

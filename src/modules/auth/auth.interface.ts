@@ -1,8 +1,21 @@
+import { User } from '@/entities/user.entity';
+
 export interface ITokenPayload {
   sub: string;
   name?: string;
   email: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+}
+
+export interface IAuthResponse {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface IGoogleUser {
+  googleId: string;
+  email: string;
+  name: string;
+  avatarUrl?: string;
+  accessToken?: string;
 }
