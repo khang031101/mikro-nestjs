@@ -1,4 +1,6 @@
+import { DatabaseSeeder } from '@/seeders/DatabaseSeeder';
 import fastifyCookie from '@fastify/cookie';
+import { MikroORM } from '@mikro-orm/postgresql';
 import { ValidationPipe } from '@nestjs/common';
 import {
   FastifyAdapter,
@@ -17,30 +19,35 @@ declare global {
 }
 
 beforeAll(async () => {
-  const moduleFixture: TestingModule = await Test.createTestingModule({
+  const module: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
   }).compile();
 
-  const testApp = moduleFixture.createNestApplication<NestFastifyApplication>(
+  const app = module.createNestApplication<NestFastifyApplication>(
     new FastifyAdapter(),
   );
 
-  testApp.useGlobalPipes(
+  app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
     }),
   );
 
-  await testApp.register(fastifyCookie, { secret: process.env.COOKIE_SECRET });
+  await app.register(fastifyCookie, { secret: process.env.COOKIE_SECRET });
 
-  await testApp.init();
+  await app.init();
 
-  await testApp.getHttpAdapter().getInstance().ready();
+  await app.getHttpAdapter().getInstance().ready();
+
+  const orm = app.get(MikroORM);
+
+  await orm.schema.refreshDatabase();
+  await orm.seeder.seed(DatabaseSeeder);
 
   global.testContext = {
-    app: testApp,
-    module: moduleFixture,
+    app,
+    module,
   };
 });
 
