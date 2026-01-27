@@ -4,7 +4,6 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 
@@ -25,8 +24,6 @@ beforeAll(async () => {
   const testApp = moduleFixture.createNestApplication<NestFastifyApplication>(
     new FastifyAdapter(),
   );
-
-  testApp.useWebSocketAdapter(new IoAdapter(testApp));
 
   testApp.useGlobalPipes(
     new ValidationPipe({

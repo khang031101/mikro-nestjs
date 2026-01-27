@@ -16,9 +16,9 @@ export class AuthHelper {
   ): Promise<{ cookie: string }> {
     const user = await this.userHelper.createUser(email, password);
 
-    const token = this.authService.generateAccessToken(user);
+    const { accessToken } = await this.authService.generateTokens(user);
     return {
-      cookie: `access_token=${token}`,
+      cookie: `access_token=${accessToken}`,
     };
   }
 }

@@ -1,29 +1,27 @@
 import { User } from '@/entities/user.entity';
-import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
+import { UserFactory } from '@/seeders/factories/user.factory';
+import { EntityManager } from '@mikro-orm/postgresql';
 
 export class UserHelper {
   private em: EntityManager;
-  private userRepository: EntityRepository<User>;
+  private userFactory: UserFactory;
 
   constructor() {
     this.em = global.testContext.app.get(EntityManager).fork();
-    this.userRepository = this.em.getRepository(User);
+    this.userFactory = new UserFactory(this.em);
   }
 
   async clearUsers() {
     await this.em
       .getConnection()
-      .execute(
-        'TRUNCATE TABLE "document_version", "document", "workspace_member", "workspace", "user" RESTART IDENTITY CASCADE',
-      );
+      .execute('TRUNCATE TABLE "user" RESTART IDENTITY CASCADE');
   }
 
   async createUser(email: string, password: string): Promise<User> {
-    const user = new User({});
-    user.email = email;
-    user.password = password;
-
-    this.userRepository.create(user);
+    const user = this.userFactory.makeOne({
+      email,
+      password,
+    });
 
     await this.em.flush();
 

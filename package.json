@@ -21,7 +21,8 @@
     "migration:create": "npx mikro-orm migration:create",
     "migration:up": "npx mikro-orm migration:up",
     "migration:down": "npx mikro-orm migration:down",
-    "migration:list": "npx mikro-orm migration:list"
+    "migration:list": "npx mikro-orm migration:list",
+    "knip": "knip"
   },
   "dependencies": {
     "@fastify/compress": "^8.3.1",
@@ -75,7 +76,7 @@
     "@nestjs/testing": "^11.1.12",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^22.10.7",
+    "@types/node": "^22.19.7",
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
@@ -85,6 +86,7 @@
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^17.0.0",
     "jest": "^30.2.0",
+    "knip": "^5.82.1",
     "prettier": "^3.8.1",
     "socket.io-client": "^4.8.3",
     "source-map-support": "^0.5.21",

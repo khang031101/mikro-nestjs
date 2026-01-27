@@ -1,8 +1,8 @@
-import { config } from 'dotenv';
-import { defineConfig, UnderscoreNamingStrategy } from '@mikro-orm/postgresql';
-import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { Migrator } from '@mikro-orm/migrations';
+import { defineConfig, UnderscoreNamingStrategy } from '@mikro-orm/postgresql';
 import { SeedManager } from '@mikro-orm/seeder';
+import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
+import { config } from 'dotenv';
 
 const env = process.env.NODE_ENV || 'development';
 
@@ -25,5 +25,15 @@ export default defineConfig({
   migrations: {
     path: 'dist/src/migrations',
     pathTs: 'src/migrations',
+    fileName(timestamp, name) {
+      return `${timestamp}${name ? '_' + name : ''}`;
+    },
+  },
+  seeder: {
+    path: 'dist/src/seeders',
+    pathTs: 'src/seeders',
+    defaultSeeder: 'DatabaseSeeder',
+    glob: '!(*.d).{js,ts}',
+    emit: 'ts',
   },
 });

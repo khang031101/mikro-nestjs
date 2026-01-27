@@ -65,8 +65,5 @@ import { WhiteboardsModule } from './modules/whiteboards/whiteboards.module';
 export class AppModule implements OnModuleInit {
   constructor(private readonly orm: MikroORM) {}
 
-  async onModuleInit() {
-    await this.orm.migrator.createMigration();
-    await this.orm.migrator.up();
-  }
+  async onModuleInit() {}
 }

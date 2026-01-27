@@ -57,6 +57,30 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Run migration
+
+```bash
+# Create new migration with current schema diff
+$ npx mikro-orm migration:create --name=initial
+# Migrate up to the latest version
+$ npx mikro-orm migration:up
+# Migrate one step down
+$ npx mikro-orm migration:down
+# List all executed migrations
+$ npx mikro-orm migration:list
+# Check if schema is up to date
+$ npx mikro-orm migration:check
+# List all pending migrations
+$ npx mikro-orm migration:pending
+# Drop the database and migrate up to the latest version
+$ npx mikro-orm migration:fresh
+
+# Create a seed
+$ npx mikro-orm seeder:create DatabaseSeeder
+# Run seeder
+$ npx mikro-orm seeder:run --class=DatabaseSeeder
+```
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
