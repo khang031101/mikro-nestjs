@@ -12,4 +12,15 @@ export default {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  coveragePathIgnorePatterns: [
+    'node_modules',
+    'dist',
+    'test',
+    'src/main.ts',
+    'src/migrations',
+    'src/seeders',
+    'src/mikro-orm.config.ts',
+    '.*\\.module\\.ts$',
+  ],
 };

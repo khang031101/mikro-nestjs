@@ -8,6 +8,8 @@ import {
 } from '@nestjs/platform-fastify';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
+import { GlobalFilter } from '@/common/filters/global.filter';
+import { APP_FILTER } from '@nestjs/core';
 
 export interface ITestContext {
   app: NestFastifyApplication;
@@ -21,6 +23,12 @@ declare global {
 beforeAll(async () => {
   const module: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
+    providers: [
+      {
+        provide: APP_FILTER,
+        useClass: GlobalFilter,
+      },
+    ],
   }).compile();
 
   const app = module.createNestApplication<NestFastifyApplication>(

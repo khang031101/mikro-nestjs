@@ -9,6 +9,7 @@ import { ClsModule } from 'nestjs-cls';
 import { GlobalFilter } from './common/filters/global.filter';
 import mikroOrmConfig from './mikro-orm.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { CardsModule } from './modules/cards/cards.module';
 import { UserModule } from './modules/users/user.module';
 import { WhiteboardsModule } from './modules/whiteboards/whiteboards.module';
 
@@ -48,6 +49,7 @@ import { WhiteboardsModule } from './modules/whiteboards/whiteboards.module';
       },
     }),
     AuthModule,
+    CardsModule,
     UserModule,
     WhiteboardsModule,
   ],

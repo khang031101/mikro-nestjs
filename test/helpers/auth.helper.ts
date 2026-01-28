@@ -21,4 +21,8 @@ export class AuthHelper {
       cookie: `access_token=${accessToken}`,
     };
   }
+
+  async clear(): Promise<void> {
+    await this.userHelper.clearUsers();
+  }
 }

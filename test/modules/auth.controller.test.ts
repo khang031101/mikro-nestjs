@@ -221,4 +221,28 @@ describe('AuthController (e2e)', () => {
       expect(statusCode).toBe(HttpStatus.UNAUTHORIZED);
     });
   });
+
+  describe('GET /auth/me', () => {
+    let authHeader: { cookie: string };
+
+    beforeAll(async () => {
+      authHeader = await authHelper.getAuthHeader(faker.internet.email());
+    });
+
+    afterAll(async () => {
+      await userHelper.clearUsers();
+    });
+
+    it('should be success', async () => {
+      const { statusCode, payload } = await app.inject({
+        method: 'GET',
+        url: '/auth/me',
+        headers: authHeader,
+      });
+
+      expect(statusCode).toBe(HttpStatus.OK);
+      const responseBody = JSON.parse(payload);
+      expect(responseBody.email).toBeDefined();
+    });
+  });
 });
