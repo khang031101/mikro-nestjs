@@ -4,6 +4,7 @@ export interface ITokenPayload {
   sub: string;
   name?: string;
   email: string;
+  isAdmin: boolean;
 }
 
 export interface IAuthResponse {

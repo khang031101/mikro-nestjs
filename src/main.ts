@@ -10,12 +10,13 @@ import {
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 declare module 'nestjs-cls' {
   interface ClsStore {
     userId?: string;
-    userEmail?: string;
     tenantId?: string;
+    isAdmin?: boolean;
   }
 }
 
@@ -36,15 +37,29 @@ async function bootstrap() {
   await app.register(helmet);
   await app.register(fastifyCsrf);
 
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
   const config = new DocumentBuilder()
     .setTitle('App API')
     .setDescription('The app API description')
     .setVersion('1.0')
     .addCookieAuth('access_token')
-    .addGlobalParameters({
-      name: 'x-tenant-id',
-      in: 'header',
-    })
+    .addApiKey(
+      {
+        type: 'apiKey',
+        name: 'x-tenant-id',
+        in: 'header',
+        description: 'Tenant ID for multi-tenant isolation',
+      },
+      'x-tenant-id',
+    )
+    .addSecurityRequirements('x-tenant-id')
     .addGlobalResponse({
       status: 500,
       description: 'Internal Server Error',

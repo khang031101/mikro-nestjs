@@ -35,4 +35,22 @@ export class AuthRedisService implements OnModuleInit, OnModuleDestroy {
   async deleteRefreshToken(userId: string) {
     await this.redisClient.del(`refresh_token:${userId}`);
   }
+
+  async setUserPermissions(userId: string, permissions: string[], ttl: number) {
+    await this.redisClient.set(
+      `user_permissions:${userId}`,
+      JSON.stringify(permissions),
+      'EX',
+      ttl,
+    );
+  }
+
+  async getUserPermissions(userId: string): Promise<string[] | null> {
+    const data = await this.redisClient.get(`user_permissions:${userId}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async deleteUserPermissions(userId: string) {
+    await this.redisClient.del(`user_permissions:${userId}`);
+  }
 }

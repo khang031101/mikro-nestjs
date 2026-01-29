@@ -13,8 +13,9 @@ export class AuthHelper {
   async getAuthHeader(
     email: string,
     password = 'Test@1234',
+    isAdmin = true,
   ): Promise<{ cookie: string }> {
-    const user = await this.userHelper.createUser(email, password);
+    const user = await this.userHelper.createUser(email, password, isAdmin);
 
     const { accessToken } = await this.authService.generateTokens(user);
     return {

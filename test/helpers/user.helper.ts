@@ -17,10 +17,27 @@ export class UserHelper {
       .execute('TRUNCATE TABLE "user" RESTART IDENTITY CASCADE');
   }
 
-  async createUser(email: string, password: string): Promise<User> {
-    const user = this.userFactory.makeOne({
+  async createUser(
+    email: string,
+    password: string,
+    isAdmin = false,
+  ): Promise<User> {
+    // Check if user already exists
+    let user = await this.em.findOne(User, { email });
+
+    if (user) {
+      // Update isAdmin if different
+      if (user.isAdmin !== isAdmin) {
+        user.isAdmin = isAdmin;
+        await this.em.flush();
+      }
+      return user;
+    }
+
+    user = this.userFactory.makeOne({
       email,
       password,
+      isAdmin,
     });
 
     await this.em.flush();

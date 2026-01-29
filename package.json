@@ -22,6 +22,7 @@
     "migration:up": "npx mikro-orm migration:up",
     "migration:down": "npx mikro-orm migration:down",
     "migration:list": "npx mikro-orm migration:list",
+    "seeder:run": "npx mikro-orm seeder:run",
     "knip": "knip"
   },
   "dependencies": {

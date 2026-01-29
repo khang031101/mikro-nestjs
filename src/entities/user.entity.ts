@@ -1,6 +1,13 @@
 import { CoreEntity } from '@/common/entities';
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
+import {
+  BeforeCreate,
+  Collection,
+  Entity,
+  OneToMany,
+  Property,
+} from '@mikro-orm/core';
 import { hash } from 'bcryptjs';
+import { Member } from './member.entity';
 
 @Entity()
 export class User extends CoreEntity {
@@ -24,6 +31,9 @@ export class User extends CoreEntity {
 
   @Property({ default: false, hidden: true })
   isAdmin: boolean = false;
+
+  @OneToMany(() => Member, (member) => member.user)
+  memberships = new Collection<Member>(this);
 
   @BeforeCreate()
   async hashPassword() {

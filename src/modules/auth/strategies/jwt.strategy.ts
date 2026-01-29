@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import type { FastifyRequest } from 'fastify';
+import { ClsService } from 'nestjs-cls';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ITokenPayload } from '../auth.interface';
-import { ClsService } from 'nestjs-cls';
 
 function extractTokenFromCookie(req: FastifyRequest) {
   const token = req.cookies['access_token'];
@@ -30,7 +30,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   validate(payload: ITokenPayload) {
     this.cls.set('userId', payload.sub);
-    this.cls.set('userEmail', payload.email);
-    return { id: payload.sub, name: payload.name, email: payload.email };
+    this.cls.set('isAdmin', payload.isAdmin);
+    return {
+      id: payload.sub,
+      name: payload.name,
+      email: payload.email,
+      isAdmin: payload.isAdmin,
+    };
   }
 }
