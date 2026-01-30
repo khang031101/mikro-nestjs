@@ -12,7 +12,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ClsService } from 'nestjs-cls';
 import { CreateMemberDto, QueryMemberDto, UpdateMemberDto } from './dtos';
 
 @Injectable()
@@ -25,12 +24,9 @@ export class MembersService {
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
     private readonly em: EntityManager,
-    private readonly cls: ClsService,
   ) {}
 
   async create(dto: CreateMemberDto): Promise<Member> {
-    const tenantId = this.cls.get('tenantId');
-
     // Verify user exists
     const user = await this.userRepository.findOne({ id: dto.userId });
     if (!user) {
@@ -40,7 +36,6 @@ export class MembersService {
     // Verify role exists and belongs to this tenant
     const role = await this.roleRepository.findOne({
       id: dto.roleId,
-      tenantId: tenantId ?? '',
     });
     if (!role) {
       throw new NotFoundException('Role not found');
@@ -49,20 +44,19 @@ export class MembersService {
     // Check if membership already exists
     const existingMember = await this.memberRepository.findOne({
       user: dto.userId,
-      tenantId: tenantId ?? '',
     });
     if (existingMember) {
       throw new BadRequestException('User is already a member of this tenant');
     }
 
-    const member = new Member({
-      tenantId: tenantId ?? '',
-      isActive: dto.isActive ?? true,
-    });
+    const member = new Member({ isActive: dto.isActive ?? true });
     member.user = user;
     member.role = role;
 
-    await this.em.persistAndFlush(member);
+    this.em.persist(member);
+
+    await this.em.flush();
+
     return member;
   }
 
@@ -104,12 +98,10 @@ export class MembersService {
 
   async update(id: string, dto: UpdateMemberDto): Promise<Member> {
     const member = await this.findOne(id);
-    const tenantId = this.cls.get('tenantId');
 
     if (dto.roleId !== undefined) {
       const role = await this.roleRepository.findOne({
         id: dto.roleId,
-        tenantId: tenantId ?? '',
       });
       if (!role) {
         throw new NotFoundException('Role not found');
@@ -126,7 +118,9 @@ export class MembersService {
   }
 
   async remove(id: string): Promise<void> {
-    const member = await this.findOne(id);
-    await this.em.removeAndFlush(member);
+    const member = this.em.getReference(Member, id);
+    this.em.remove(member);
+
+    await this.em.flush();
   }
 }

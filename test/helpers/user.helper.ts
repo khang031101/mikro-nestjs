@@ -20,19 +20,7 @@ export class UserHelper {
     password: string,
     isAdmin = false,
   ): Promise<User> {
-    // Check if user already exists
-    let user = await this.em.findOne(User, { email });
-
-    if (user) {
-      // Update isAdmin if different
-      if (user.isAdmin !== isAdmin) {
-        user.isAdmin = isAdmin;
-        await this.em.flush();
-      }
-      return user;
-    }
-
-    user = this.userFactory.makeOne({
+    const user = this.userFactory.makeOne({
       email,
       password,
       isAdmin,

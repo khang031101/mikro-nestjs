@@ -1,7 +1,14 @@
-import { Entity, ManyToOne, Property, Index } from '@mikro-orm/core';
 import { TenantEntity } from '@/common/entities';
-import { User } from './user.entity';
+import { getTenantId } from '@/common/utils/tenant';
+import {
+  BeforeCreate,
+  Entity,
+  Index,
+  ManyToOne,
+  Property,
+} from '@mikro-orm/core';
 import { Role } from './role.entity';
+import { User } from './user.entity';
 
 @Entity()
 @Index({ properties: ['user', 'tenantId'] })
@@ -18,5 +25,14 @@ export class Member extends TenantEntity {
   constructor(partial: Partial<Member>) {
     super();
     Object.assign(this, partial);
+  }
+
+  @BeforeCreate()
+  setTenantId() {
+    if (this.tenantId) {
+      return;
+    }
+
+    this.tenantId = getTenantId();
   }
 }

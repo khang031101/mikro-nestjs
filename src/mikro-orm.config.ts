@@ -3,6 +3,7 @@ import { defineConfig, UnderscoreNamingStrategy } from '@mikro-orm/postgresql';
 import { SeedManager } from '@mikro-orm/seeder';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { config } from 'dotenv';
+import { writeFileSync } from 'node:fs';
 
 const env = process.env.NODE_ENV || 'development';
 
@@ -18,7 +19,7 @@ export default defineConfig({
   dbName: process.env.DB_NAME || 'auth_db',
   entities: ['dist/**/*.entity.js'],
   entitiesTs: ['src/**/*.entity.ts'],
-  debug: env === 'development',
+  debug: env === 'development' || env === 'test',
   highlighter: new SqlHighlighter(),
   namingStrategy: UnderscoreNamingStrategy,
   extensions: [Migrator, SeedManager],
@@ -35,5 +36,12 @@ export default defineConfig({
     defaultSeeder: 'DatabaseSeeder',
     glob: '!(*.d).{js,ts}',
     emit: 'ts',
+  },
+  logger(message) {
+    if (env === 'test') {
+      writeFileSync('mikro-orm.log', message + '\n', { flag: 'a' });
+    } else {
+      console.log(message);
+    }
   },
 });

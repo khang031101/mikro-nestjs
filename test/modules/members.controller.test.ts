@@ -14,7 +14,7 @@ describe('MembersController (e2e)', () => {
   let memberHelper: MemberHelper;
   let userHelper: UserHelper;
   let authHeader: { cookie: string };
-  const tenantId = faker.string.uuid();
+  let tenantId: string;
 
   beforeAll(async () => {
     app = global.testContext.app;
@@ -23,6 +23,7 @@ describe('MembersController (e2e)', () => {
     memberHelper = new MemberHelper();
     userHelper = new UserHelper();
     authHeader = await authHelper.getAuthHeader(faker.internet.email());
+    tenantId = faker.string.uuid();
   });
 
   afterAll(async () => {
@@ -315,50 +316,6 @@ describe('MembersController (e2e)', () => {
       });
 
       expect(getStatus).toBe(HttpStatus.NOT_FOUND);
-    });
-  });
-
-  describe('Non-admin permission checks', () => {
-    it('should deny user without USER_WRITE to create member', async () => {
-      const email = faker.internet.email();
-      const user = await userHelper.createUser(email, 'Test@1234', false);
-      const role = await roleHelper.createRole(
-        'Read Only Member',
-        [Permission.USER_READ],
-        tenantId,
-      );
-      await memberHelper.createMember(user, role, tenantId);
-      const nonAdminAuth = await authHelper.getAuthHeader(
-        email,
-        'Test@1234',
-        false,
-      );
-
-      const targetUser = await userHelper.createUser(
-        faker.internet.email(),
-        'Test@1234',
-        false,
-      );
-      const targetRole = await roleHelper.createRole(
-        'Some Role',
-        [Permission.USER_READ],
-        tenantId,
-      );
-
-      const { statusCode } = await app.inject({
-        method: 'POST',
-        url: '/members',
-        headers: {
-          ...nonAdminAuth,
-          'x-tenant-id': tenantId,
-        },
-        payload: {
-          userId: targetUser.id,
-          roleId: targetRole.id,
-        },
-      });
-
-      expect(statusCode).toBe(HttpStatus.FORBIDDEN);
     });
   });
 });

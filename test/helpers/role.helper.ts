@@ -33,10 +33,6 @@ export class RoleHelper {
   }
 
   async findRole(id: string) {
-    return this.em.findOneOrFail(
-      Role,
-      { id },
-      { filters: false, refresh: true },
-    );
+    return this.em.findOne(Role, { id }, { filters: false, refresh: true });
   }
 }

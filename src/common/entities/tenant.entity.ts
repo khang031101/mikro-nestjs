@@ -1,13 +1,11 @@
 import { Filter, Property } from '@mikro-orm/core';
-import { ClsServiceManager } from 'nestjs-cls';
+import { getTenantId } from '../utils/tenant';
 import { CoreEntity } from './core.entity';
 
 @Filter({
   name: 'tenant',
   cond: () => {
-    const cls = ClsServiceManager.getClsService();
-    const tenantId = cls.get<string>('tenantId') ?? '';
-    return { tenantId };
+    return { tenantId: getTenantId() };
   },
   default: true,
 })

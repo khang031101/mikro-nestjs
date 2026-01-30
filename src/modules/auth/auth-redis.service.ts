@@ -47,6 +47,7 @@ export class AuthRedisService implements OnModuleInit, OnModuleDestroy {
 
   async getUserPermissions(userId: string): Promise<string[] | null> {
     const data = await this.redisClient.get(`user_permissions:${userId}`);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return data ? JSON.parse(data) : null;
   }
 
