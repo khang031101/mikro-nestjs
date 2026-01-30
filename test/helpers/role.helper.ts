@@ -1,6 +1,6 @@
+import { Permission } from '@/common/enums/permission.enum';
 import { Role } from '@/entities/role.entity';
 import { RoleFactory } from '@/seeders/factories/role.factory';
-import { Permission } from '@/common/enums/permission.enum';
 import { EntityManager } from '@mikro-orm/postgresql';
 
 export class RoleHelper {
@@ -13,9 +13,7 @@ export class RoleHelper {
   }
 
   async clearRoles() {
-    await this.em
-      .getConnection()
-      .execute('TRUNCATE TABLE "role" RESTART IDENTITY CASCADE');
+    await this.em.nativeDelete(Role, {}, { filters: false });
   }
 
   async createRole(
@@ -32,5 +30,13 @@ export class RoleHelper {
     await this.em.flush();
 
     return role;
+  }
+
+  async findRole(id: string) {
+    return this.em.findOneOrFail(
+      Role,
+      { id },
+      { filters: false, refresh: true },
+    );
   }
 }

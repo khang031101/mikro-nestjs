@@ -6,10 +6,10 @@ import { Role } from './role.entity';
 @Entity()
 @Index({ properties: ['user', 'tenantId'] })
 export class Member extends TenantEntity {
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { deleteRule: 'cascade' })
   user!: User;
 
-  @ManyToOne(() => Role)
+  @ManyToOne(() => Role, { deleteRule: 'cascade' })
   role!: Role;
 
   @Property({ default: true })

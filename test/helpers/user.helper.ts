@@ -12,9 +12,7 @@ export class UserHelper {
   }
 
   async clearUsers() {
-    await this.em
-      .getConnection()
-      .execute('TRUNCATE TABLE "user" RESTART IDENTITY CASCADE');
+    await this.em.nativeDelete(User, {}, { filters: false });
   }
 
   async createUser(

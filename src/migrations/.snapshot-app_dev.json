@@ -334,6 +334,7 @@
             "id"
           ],
           "referencedTableName": "public.user",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         },
         "member_role_id_foreign": {
@@ -346,6 +347,7 @@
             "id"
           ],
           "referencedTableName": "public.role",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       },

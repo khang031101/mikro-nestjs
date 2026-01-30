@@ -67,7 +67,8 @@ export class RolesService {
   }
 
   async remove(id: string): Promise<void> {
-    const role = await this.findOne(id);
-    await this.em.removeAndFlush(role);
+    this.em.remove(this.em.getReference(Role, id));
+
+    await this.em.flush();
   }
 }

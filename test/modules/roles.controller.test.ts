@@ -14,7 +14,7 @@ describe('RolesController (e2e)', () => {
   let memberHelper: MemberHelper;
   let userHelper: UserHelper;
   let authHeader: { cookie: string };
-  const tenantId = faker.string.uuid();
+  let tenantId: string;
 
   beforeAll(async () => {
     app = global.testContext.app;
@@ -23,6 +23,7 @@ describe('RolesController (e2e)', () => {
     memberHelper = new MemberHelper();
     userHelper = new UserHelper();
     authHeader = await authHelper.getAuthHeader(faker.internet.email());
+    tenantId = faker.string.uuid();
   });
 
   afterAll(async () => {
@@ -33,7 +34,7 @@ describe('RolesController (e2e)', () => {
 
   describe('POST /roles', () => {
     it('should create a new role', async () => {
-      const createDto = {
+      const dto = {
         name: 'Admin',
         permissions: [Permission.ADMIN],
       };
@@ -45,18 +46,18 @@ describe('RolesController (e2e)', () => {
           ...authHeader,
           'x-tenant-id': tenantId,
         },
-        payload: createDto,
+        payload: dto,
       });
 
       expect(statusCode).toBe(HttpStatus.CREATED);
       const responseBody = JSON.parse(payload);
-      expect(responseBody.name).toBe(createDto.name);
-      expect(responseBody.permissions).toEqual(createDto.permissions);
+      expect(responseBody.name).toBe(dto.name);
+      expect(responseBody.permissions).toEqual(dto.permissions);
       expect(responseBody.tenantId).toBe(tenantId);
     });
 
     it('should fail when not authenticated', async () => {
-      const createDto = {
+      const dto = {
         name: 'Admin',
         permissions: [Permission.ADMIN],
       };
@@ -67,7 +68,7 @@ describe('RolesController (e2e)', () => {
         headers: {
           'x-tenant-id': tenantId,
         },
-        payload: createDto,
+        payload: dto,
       });
 
       expect(statusCode).toBe(HttpStatus.UNAUTHORIZED);
@@ -143,7 +144,7 @@ describe('RolesController (e2e)', () => {
         tenantId,
       );
 
-      const updateDto = {
+      const dto = {
         name: 'Support Lead',
         permissions: [Permission.USER_READ, Permission.USER_WRITE],
       };
@@ -155,13 +156,13 @@ describe('RolesController (e2e)', () => {
           ...authHeader,
           'x-tenant-id': tenantId,
         },
-        payload: updateDto,
+        payload: dto,
       });
 
       expect(statusCode).toBe(HttpStatus.OK);
       const responseBody = JSON.parse(payload);
-      expect(responseBody.name).toBe(updateDto.name);
-      expect(responseBody.permissions).toEqual(updateDto.permissions);
+      expect(responseBody.name).toBe(dto.name);
+      expect(responseBody.permissions).toEqual(dto.permissions);
     });
   });
 
@@ -186,17 +187,9 @@ describe('RolesController (e2e)', () => {
       const responseBody = JSON.parse(payload);
       expect(responseBody.message).toBeDefined();
 
-      // Verify deletion
-      const { statusCode: getStatus } = await app.inject({
-        method: 'GET',
-        url: `/roles/${role.id}`,
-        headers: {
-          ...authHeader,
-          'x-tenant-id': tenantId,
-        },
-      });
-
-      expect(getStatus).toBe(HttpStatus.NOT_FOUND);
+      // Verify role is deleted
+      const deletedRole = await roleHelper.findRole(role.id);
+      expect(deletedRole).toBeNull();
     });
   });
 

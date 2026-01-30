@@ -1,6 +1,7 @@
 import { CoreEntity } from '@/common/entities';
 import {
   BeforeCreate,
+  Cascade,
   Collection,
   Entity,
   OneToMany,
@@ -32,7 +33,9 @@ export class User extends CoreEntity {
   @Property({ default: false, hidden: true })
   isAdmin: boolean = false;
 
-  @OneToMany(() => Member, (member) => member.user)
+  @OneToMany(() => Member, (member) => member.user, {
+    cascade: [Cascade.REMOVE],
+  })
   memberships = new Collection<Member>(this);
 
   @BeforeCreate()

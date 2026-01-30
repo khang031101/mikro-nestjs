@@ -14,9 +14,7 @@ export class MemberHelper {
   }
 
   async clearMembers() {
-    await this.em
-      .getConnection()
-      .execute('TRUNCATE TABLE "member" RESTART IDENTITY CASCADE');
+    await this.em.nativeDelete(Member, {}, { filters: false });
   }
 
   async createMember(
